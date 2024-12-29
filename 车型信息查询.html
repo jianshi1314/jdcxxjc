@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>企业信息录入与汇总</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            margin-bottom: 20px;
+        }
+        .input-section, .summary-section {
+            border: 1px solid #ccc;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        .input-section label {
+            display: block;
+            margin-bottom: 10px;
+        }
+        .input-section input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .input-section button {
+            padding: 10px 20px;
+            margin-right: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .input-section button.add {
+            background-color: #28a745;
+            color: white;
+        }
+        .input-section button.save {
+            background-color: #007bff;
+            color: white;
+        }
+        .summary-section table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .summary-section th, .summary-section td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: left;
+        }
+        .summary-section th {
+            background-color: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 第一部分：录入信息 -->
+        <div class="input-section">
+            <h2>录入厂商信息</h2>
+            <label for="manufacturer">企业名称:</label>
+            <input type="text" id="manufacturer" placeholder="请输入企业名称">
+            <label for="model">车辆型号:</label>
+            <input type="text" id="model" placeholder="请输入车辆型号">
+            <label for="time">时间:</label>
+            <input type="date" id="time">
+            <button class="add" onclick="addEntry()">增加</button>
+            <button class="save" onclick="saveData()">保存</button>
+            <button class="export" onclick="exportToCSV()">导出为 CSV</button>
+        </div>
+
+        <!-- 第二部分：汇总信息 -->
+        <div class="summary-section">
+            <h2>汇总信息</h2>
+            <table id="summaryTable">
+                <thead>
+                    <tr>
+                        <th>企业名称</th>
+                        <th>车辆型号</th>
+                        <th>更新时间</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- 动态添加的行将显示在这里 -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // 用于存储录入的数据
+        let entries = [];
+
+        // 增加条目
+        function addEntry() {
+            const manufacturer = document.getElementById('manufacturer').value;
+            const model = document.getElementById('model').value;
+            const time = document.getElementById('time').value;
+
+            if (manufacturer && model && time) {
+                // 添加到数组
+                entries.push({ manufacturer, model, time });
+
+                // 更新表格
+                updateSummaryTable();
+
+                // 清空输入框
+                document.getElementById('manufacturer').value = '';
+                document.getElementById('model').value = '';
+                document.getElementById('time').value = '';
+            } else {
+                alert('请填写所有字段！');
+            }
+        }
+
+        // 更新汇总表格
+        function updateSummaryTable() {
+            const tbody = document.querySelector('#summaryTable tbody');
+            tbody.innerHTML = ''; // 清空现有内容
+
+            entries.forEach(entry => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${entry.manufacturer}</td>
+                    <td>${entry.model}</td>
+                    <td>${entry.time}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // 保存数据到 LocalStorage
+        function saveData() {
+            if (entries.length > 0) {
+                localStorage.setItem('manufacturerData', JSON.stringify(entries));
+                alert('数据已保存到本地！');
+            } else {
+                alert('没有数据可保存！');
+            }
+        }
+
+        // 导出数据为 CSV 文件
+        function exportToCSV() {
+            if (entries.length === 0) {
+                alert('没有数据可导出！');
+                return;
+            }
+
+            // 创建 CSV 内容
+            const headers = ['企业名称', '车辆型号', '更新时间'];
+            const rows = entries.map(entry => [entry.manufacturer, entry.model, entry.time]);
+
+            // 添加 BOM 头，确保 Excel 正确识别 UTF-8 编码
+            const BOM = '\uFEFF'; // BOM 头
+            const csvContent = BOM + [headers, ...rows].map(row => row.join(',')).join('\n');
+
+            // 创建下载链接
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = '厂商信息.csv';
+            link.click();
+        }
+
+        // 页面加载时加载数据
+        function loadData() {
+            const savedData = localStorage.getItem('manufacturerData');
+            if (savedData) {
+                entries = JSON.parse(savedData);
+                updateSummaryTable();
+            }
+        }
+
+        // 页面加载时加载数据
+        window.onload = loadData;
+    </script>
+</body>
+</html>

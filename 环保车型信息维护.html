@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>环保车型信息维护</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            margin-bottom: 20px;
+        }
+        .input-section, .summary-section {
+            border: 1px solid #ccc;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        .input-section label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .input-section input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .input-section button {
+            padding: 10px 20px;
+            margin-right: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+        }
+        .input-section button:hover {
+            background-color: #0056b3;
+        }
+        .summary-section table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 14px; /* 表格字体调小 */
+        }
+        .summary-section th, .summary-section td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: left;
+        }
+        .summary-section th {
+            background-color: #f8f9fa;
+        }
+        .input-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .input-column {
+            flex: 1;
+        }
+        .summary-section button {
+            padding: 10px 20px;
+            margin-right: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #28a745;
+            color: white;
+        }
+        .summary-section button.export {
+            background-color: #17a2b8;
+        }
+        .summary-section button:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 第一部分：录入信息 -->
+        <div class="input-section">
+            <h2>环保车型信息录入</h2>
+            <div class="input-row">
+                <div class="input-column">
+                    <label for="manufacturerName">企业名称:</label>
+                    <input type="text" id="manufacturerName" placeholder="请输入企业名称">
+                    <label for="vehicleType">车辆类型:</label>
+                    <input type="text" id="vehicleType" placeholder="请输入车辆类型">
+                    <label for="engineModel">发动机型号:</label>
+                    <input type="text" id="engineModel" placeholder="请输入发动机型号">
+                    <label for="aftertreatmentModel">后处理型号:</label>
+                    <input type="text" id="aftertreatmentModel" placeholder="请输入后处理型号">
+                    <label for="catalyticConverterModel">三元催化器型号:</label>
+                    <input type="text" id="catalyticConverterModel" placeholder="请输入三元催化器型号">
+                    <label for="dpfModel">DPF型号:</label>
+                    <input type="text" id="dpfModel" placeholder="请输入DPF型号">
+                    <label for="scrModel">SCR型号:</label>
+                    <input type="text" id="scrModel" placeholder="请输入SCR型号">
+                    <label for="ascModel">ASC型号:</label>
+                    <input type="text" id="ascModel" placeholder="请输入ASC型号">
+                    <label for="egrModel">EGR型号:</label>
+                    <input type="text" id="egrModel" placeholder="请输入EGR型号">
+                </div>
+                <div class="input-column">
+                    <label for="manufacturerModel">车辆型号:</label>
+                    <input type="text" id="manufacturerModel" placeholder="请输入车辆型号">
+                    <label for="environmentalInfo">环保关键信息:</label>
+                    <input type="text" id="environmentalInfo" placeholder="请输入环保关键信息">
+                    <label for="engineManufacturer">发动机生产厂家:</label>
+                    <input type="text" id="engineManufacturer" placeholder="请输入发动机生产厂家">
+                    <label for="aftertreatmentManufacturer">后处理生产厂家:</label>
+                    <input type="text" id="aftertreatmentManufacturer" placeholder="请输入后处理生产厂家">
+                    <label for="catalyticConverterManufacturer">三元催化器生产厂家:</label>
+                    <input type="text" id="catalyticConverterManufacturer" placeholder="请输入三元催化器生产厂家">
+                    <label for="dpfManufacturer">DPF生产厂家:</label>
+                    <input type="text" id="dpfManufacturer" placeholder="请输入DPF生产厂家">
+                    <label for="scrManufacturer">SCR生产厂家:</label>
+                    <input type="text" id="scrManufacturer" placeholder="请输入SCR生产厂家">
+                    <label for="ascManufacturer">ASC生产厂家:</label>
+                    <input type="text" id="ascManufacturer" placeholder="请输入ASC生产厂家">
+                    <label for="egrManufacturer">EGR生产厂家:</label>
+                    <input type="text" id="egrManufacturer" placeholder="请输入EGR生产厂家">
+                </div>
+            </div>
+            <button onclick="addEntry()">提交</button>
+        </div>
+
+        <!-- 第二部分：汇总信息 -->
+        <div class="summary-section">
+            <h2>环保车型信息汇总</h2>
+            <button onclick="saveData()">保存数据</button>
+            <button class="export" onclick="exportToCSV()">导出为 CSV</button>
+            <table id="summaryTable">
+                <thead>
+                    <tr>
+                        <th>企业名称</th>
+                        <th>车辆型号</th>
+                        <th>车辆类型</th>
+                        <th>环保关键信息</th>
+                        <th>发动机型号</th>
+                        <th>发动机生产厂家</th>
+                        <th>后处理型号</th>
+                        <th>后处理生产厂家</th>
+                        <th>三元催化器型号</th>
+                        <th>三元催化器生产厂家</th>
+                        <th>DPF型号</th>
+                        <th>DPF生产厂家</th>
+                        <th>SCR型号</th>
+                        <th>SCR生产厂家</th>
+                        <th>ASC型号</th>
+                        <th>ASC生产厂家</th>
+                        <th>EGR型号</th>
+                        <th>EGR生产厂家</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- 动态添加的行将显示在这里 -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // 用于存储录入的数据
+        let entries = [];
+
+        // 增加条目
+        function addEntry() {
+            const manufacturerName = document.getElementById('manufacturerName').value;
+            const manufacturerModel = document.getElementById('manufacturerModel').value;
+            const vehicleType = document.getElementById('vehicleType').value;
+            const environmentalInfo = document.getElementById('environmentalInfo').value;
+            const engineModel = document.getElementById('engineModel').value;
+            const engineManufacturer = document.getElementById('engineManufacturer').value;
+            const aftertreatmentModel = document.getElementById('aftertreatmentModel').value;
+            const aftertreatmentManufacturer = document.getElementById('aftertreatmentManufacturer').value;
+            const catalyticConverterModel = document.getElementById('catalyticConverterModel').value;
+            const catalyticConverterManufacturer = document.getElementById('catalyticConverterManufacturer').value;
+            const dpfModel = document.getElementById('dpfModel').value;
+            const dpfManufacturer = document.getElementById('dpfManufacturer').value;
+            const scrModel = document.getElementById('scrModel').value;
+            const scrManufacturer = document.getElementById('scrManufacturer').value;
+            const ascModel = document.getElementById('ascModel').value;
+            const ascManufacturer = document.getElementById('ascManufacturer').value;
+            const egrModel = document.getElementById('egrModel').value;
+            const egrManufacturer = document.getElementById('egrManufacturer').value;
+
+            // 添加到数组
+            entries.push({
+                manufacturerName,
+                manufacturerModel,
+                vehicleType,
+                environmentalInfo,
+                engineModel,
+                engineManufacturer,
+                aftertreatmentModel,
+                aftertreatmentManufacturer,
+                catalyticConverterModel,
+                catalyticConverterManufacturer,
+                dpfModel,
+                dpfManufacturer,
+                scrModel,
+                scrManufacturer,
+                ascModel,
+                ascManufacturer,
+                egrModel,
+                egrManufacturer
+            });
+
+            // 更新表格
+            updateSummaryTable();
+
+            // 清空输入框
+            document.getElementById('manufacturerName').value = '';
+            document.getElementById('manufacturerModel').value = '';
+            document.getElementById('vehicleType').value = '';
+            document.getElementById('environmentalInfo').value = '';
+            document.getElementById('engineModel').value = '';
+            document.getElementById('engineManufacturer').value = '';
+            document.getElementById('aftertreatmentModel').value = '';
+            document.getElementById('aftertreatmentManufacturer').value = '';
+            document.getElementById('catalyticConverterModel').value = '';
+            document.getElementById('catalyticConverterManufacturer').value = '';
+            document.getElementById('dpfModel').value = '';
+            document.getElementById('dpfManufacturer').value = '';
+            document.getElementById('scrModel').value = '';
+            document.getElementById('scrManufacturer').value = '';
+            document.getElementById('ascModel').value = '';
+            document.getElementById('ascManufacturer').value = '';
+            document.getElementById('egrModel').value = '';
+            document.getElementById('egrManufacturer').value = '';
+        }
+
+        // 更新汇总表格
+        function updateSummaryTable() {
+            const tbody = document.querySelector('#summaryTable tbody');
+            tbody.innerHTML = ''; // 清空现有内容
+
+            entries.forEach(entry => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${entry.manufacturerName}</td>
+                    <td>${entry.manufacturerModel}</td>
+                    <td>${entry.vehicleType}</td>
+                    <td>${entry.environmentalInfo}</td>
+                    <td>${entry.engineModel}</td>
+                    <td>${entry.engineManufacturer}</td>
+                    <td>${entry.aftertreatmentModel}</td>
+                    <td>${entry.aftertreatmentManufacturer}</td>
+                    <td>${entry.catalyticConverterModel}</td>
+                    <td>${entry.catalyticConverterManufacturer}</td>
+                    <td>${entry.dpfModel}</td>
+                    <td>${entry.dpfManufacturer}</td>
+                    <td>${entry.scrModel}</td>
+                    <td>${entry.scrManufacturer}</td>
+                    <td>${entry.ascModel}</td>
+                    <td>${entry.ascManufacturer}</td>
+                    <td>${entry.egrModel}</td>
+                    <td>${entry.egrManufacturer}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // 保存数据到 LocalStorage
+        function saveData() {
+            if (entries.length > 0) {
+                localStorage.setItem('vehicleData', JSON.stringify(entries));
+                alert('数据已保存到本地！');
+            } else {
+                alert('没有数据可保存！');
+            }
+        }
+
+        // 导出数据为 CSV 文件
+        function exportToCSV() {
+            if (entries.length === 0) {
+                alert('没有数据可导出！');
+                return;
+            }
+
+            // 创建 CSV 内容
+            const headers = [
+                '企业名称', '车辆型号', '车辆类型', '环保关键信息', '发动机型号', '发动机生产厂家',
+                '后处理型号', '后处理生产厂家', '三元催化器型号', '三元催化器生产厂家', 'DPF型号',
+                'DPF生产厂家', 'SCR型号', 'SCR生产厂家', 'ASC型号', 'ASC生产厂家', 'EGR型号', 'EGR生产厂家'
+            ];
+            const rows = entries.map(entry => [
+                entry.manufacturerName,
+                entry.manufacturerModel,
+                entry.vehicleType,
+                entry.environmentalInfo,
+                entry.engineModel,
+                entry.engineManufacturer,
+                entry.aftertreatmentModel,
+                entry.aftertreatmentManufacturer,
+                entry.catalyticConverterModel,
+                entry.catalyticConverterManufacturer,
+                entry.dpfModel,
+                entry.dpfManufacturer,
+                entry.scrModel,
+                entry.scrManufacturer,
+                entry.ascModel,
+                entry.ascManufacturer,
+                entry.egrModel,
+                entry.egrManufacturer
+            ]);
+
+            // 添加 BOM 头，确保 Excel 正确识别 UTF-8 编码
+            const BOM = '\uFEFF'; // BOM 头
+            const csvContent = BOM + [headers, ...rows].map(row => row.join(',')).join('\n');
+
+            // 创建下载链接
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = '环保车型信息.csv';
+            link.click();
+        }
+
+        // 页面加载时加载数据
+        function loadData() {
+            const savedData = localStorage.getItem('vehicleData');
+            if (savedData) {
+                entries = JSON.parse(savedData);
+                updateSummaryTable();
+            }
+        }
+
+        // 页面加载时加载数据
+        window.onload = loadData;
+    </script>
+</body>
+</html>

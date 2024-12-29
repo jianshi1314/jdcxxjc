@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据详情页面</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .section {
+            margin-bottom: 30px;
+            border: 1px solid #ccc;
+            padding: 20px;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+        }
+        .section h2 {
+            margin-top: 0;
+        }
+        .input-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .input-column {
+            flex: 1;
+        }
+        .input-column label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .input-column input, .input-column select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .buttons button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            font-size: 14px;
+        }
+        .buttons button:hover {
+            background-color: #0056b3;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        table th, table td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: left;
+        }
+        table th {
+            background-color: #e9ecef;
+        }
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .photo-grid div {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+            text-align: center;
+            background-color: #fff;
+        }
+        .photo-grid input[type="file"] {
+            display: none;
+        }
+        .photo-grid label {
+            cursor: pointer;
+            color: #007bff;
+        }
+        .photo-grid label:hover {
+            text-decoration: underline;
+        }
+        .photo-grid img {
+            max-width: 100%;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .photo-summary {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .photo-summary-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .photo-summary-row img {
+            max-width: 100px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        /* 模态框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal img {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 5px;
+        }
+        .close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: white;
+            font-size: 30px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <!-- 第一部分：车辆信息录入 -->
+    <div class="section">
+        <h2>车辆信息录入</h2>
+        <div class="input-row">
+            <div class="input-column">
+                <label for="plateNumber">车牌号码:</label>
+                <input type="text" id="plateNumber" placeholder="请输入车牌号码">
+                <label for="vin">VIN:</label>
+                <input type="text" id="vin" placeholder="请输入VIN">
+                <label for="suspensionType">悬挂形式:</label>
+                <select id="suspensionType">
+                    <option value="独立">独立</option>
+                    <option value="非独立">非独立</option>
+                </select>
+            </div>
+            <div class="input-column">
+                <label for="vehicleType">车辆类型:</label>
+                <input type="text" id="vehicleType" placeholder="请输入车辆类型">
+                <label for="bodyColor">车身颜色:</label>
+                <input type="text" id="bodyColor" placeholder="请输入车身颜色">
+                <label for="plateColor">车牌颜色:</label>
+                <select id="plateColor">
+                    <option value="蓝色">蓝色</option>
+                    <option value="黄色">黄色</option>
+                    <option value="绿色">绿色</option>
+                </select>
+            </div>
+            <div class="input-column">
+                <label for="engineNumber">发动机号:</label>
+                <input type="text" id="engineNumber" placeholder="请输入发动机号">
+                <label for="testMethod">检测方法:</label>
+                <input type="text" id="testMethod" placeholder="请输入检测方法">
+                <label for="manufactureDate">出厂日期:</label>
+                <input type="date" id="manufactureDate">
+            </div>
+            <div class="input-column">
+                <label for="brandModel">厂牌型号:</label>
+                <input type="text" id="brandModel" placeholder="请输入厂牌型号">
+                <label for="idleSpeedReason">双怠速转速异常原因:</label>
+                <input type="text" id="idleSpeedReason" placeholder="请输入双怠速转速异常原因">
+            </div>
+        </div>
+    </div>
+
+    <!-- 第二部分：检测照片 -->
+    <div class="section">
+        <h2>检测照片</h2>
+        <div class="photo-grid">
+            <div>
+                <label for="leftFront">左前45度</label>
+                <input type="file" id="leftFront" onchange="previewImage(this)">
+                <img id="leftFrontPreview" src="" alt="" style="display: none;">
+            </div>
+            <div>
+                <label for="rightFront">右前45度</label>
+                <input type="file" id="rightFront" onchange="previewImage(this)">
+                <img id="rightFrontPreview" src="" alt="" style="display: none;">
+            </div>
+            <div>
+                <label for="nameplate">整车铭牌</label>
+                <input type="file" id="nameplate" onchange="previewImage(this)">
+                <img id="nameplatePreview" src="" alt="" style="display: none;">
+            </div>
+            <div>
+                <label for="doc">DOC</label>
+                <input type="file" id="doc" onchange="previewImage(this)">
+                <img id="docPreview" src="" alt="" style="display: none;">
+            </div>
+            <div>
+                <label for="dpf">DPF</label>
+                <input type="file" id="dpf" onchange="previewImage(this)">
+                <img id="dpfPreview" src="" alt="" style="display: none;">
+            </div>
+            <div>
+                <label for="scrAsc">SCR/ASC</label>
+                <input type="file" id="scrAsc" onchange="previewImage(this)">
+                <img id="scrAscPreview" src="" alt="" style="display: none;">
+            </div>
+            <div>
+                <label for="muffler">消声器（实车）</label>
+                <input type="file" id="muffler" onchange="previewImage(this)">
+                <img id="mufflerPreview" src="" alt="" style="display: none;">
+            </div>
+            <div>
+                <label for="ecu">ECU</label>
+                <input type="file" id="ecu" onchange="previewImage(this)">
+                <img id="ecuPreview" src="" alt="" style="display: none;">
+            </div>
+            <div>
+                <label for="turbocharger">增压器</label>
+                <input type="file" id="turbocharger" onchange="previewImage(this)">
+                <img id="turbochargerPreview" src="" alt="" style="display: none;">
+            </div>
+        </div>
+        <div class="buttons">
+            <button onclick="saveData()">保存</button>
+            <button onclick="exportToCSV()">导出为CSV</button>
+        </div>
+    </div>
+
+    <!-- 第三部分：信息汇总 -->
+    <div class="section">
+        <h2>信息汇总</h2>
+        <table id="summaryTable">
+            <thead>
+                <tr>
+                    <th>序号</th>
+                    <th>车牌号码</th>
+                    <th>VIN</th>
+                    <th>悬挂形式</th>
+                    <th>车辆类型</th>
+                    <th>车身颜色</th>
+                    <th>车牌颜色</th>
+                    <th>发动机号</th>
+                    <th>检测方法</th>
+                    <th>出厂日期</th>
+                    <th>厂牌型号</th>
+                    <th>双怠速转速异常原因</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- 动态添加的行将显示在这里 -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 第四部分：检测照片汇总 -->
+    <div class="section">
+        <h2>检测照片汇总</h2>
+        <div class="photo-summary" id="photoSummary">
+            <!-- 动态添加的照片汇总行将显示在这里 -->
+        </div>
+    </div>
+
+    <!-- 模态框 -->
+    <div id="imageModal" class="modal">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <img id="modalImage" src="" alt="">
+    </div>
+
+    <script>
+        let serialNumber = 1; // 序号从1开始
+
+        // 保存数据
+        function saveData() {
+            const plateNumber = document.getElementById('plateNumber').value;
+            const vin = document.getElementById('vin').value;
+            const vehicleType = document.getElementById('vehicleType').value;
+            const bodyColor = document.getElementById('bodyColor').value;
+            const plateColor = document.getElementById('plateColor').value;
+            const engineNumber = document.getElementById('engineNumber').value;
+            const suspensionType = document.getElementById('suspensionType').value;
+            const testMethod = document.getElementById('testMethod').value;
+            const manufactureDate = document.getElementById('manufactureDate').value;
+            const brandModel = document.getElementById('brandModel').value;
+            const idleSpeedReason = document.getElementById('idleSpeedReason').value;
+
+            // 检查至少有一个字段已填写
+            if (plateNumber || vin || vehicleType || bodyColor || plateColor || engineNumber || suspensionType || testMethod || manufactureDate || brandModel || idleSpeedReason) {
+                const table = document.getElementById('summaryTable').getElementsByTagName('tbody')[0];
+                const newRow = table.insertRow();
+                newRow.innerHTML = `
+                    <td>${serialNumber}</td>
+                    <td>${plateNumber}</td>
+                    <td>${vin}</td>
+                    <td>${suspensionType}</td>
+                    <td>${vehicleType}</td>
+                    <td>${bodyColor}</td>
+                    <td>${plateColor}</td>
+                    <td>${engineNumber}</td>
+                    <td>${testMethod}</td>
+                    <td>${manufactureDate}</td>
+                    <td>${brandModel}</td>
+                    <td>${idleSpeedReason}</td>
+                `;
+
+                // 更新检测照片汇总
+                updatePhotoSummary(vin);
+
+                // 清空输入框
+                document.getElementById('plateNumber').value = '';
+                document.getElementById('vin').value = '';
+                document.getElementById('vehicleType').value = '';
+                document.getElementById('bodyColor').value = '';
+                document.getElementById('plateColor').value = '蓝色';
+                document.getElementById('engineNumber').value = '';
+                document.getElementById('suspensionType').value = '独立';
+                document.getElementById('testMethod').value = '';
+                document.getElementById('manufactureDate').value = '';
+                document.getElementById('brandModel').value = '';
+                document.getElementById('idleSpeedReason').value = '';
+
+                // 序号递增
+                serialNumber++;
+            } else {
+                alert('请至少填写一个字段！');
+            }
+        }
+
+        // 更新检测照片汇总
+        function updatePhotoSummary(vin) {
+            const photoSummary = document.getElementById('photoSummary');
+            const newRow = document.createElement('div');
+            newRow.className = 'photo-summary-row';
+
+            // 添加VIN信息
+            newRow.innerHTML = `<p><strong>VIN:</strong> ${vin}</p>`;
+
+            // 添加照片
+            const photoIds = ['leftFront', 'rightFront', 'nameplate', 'doc', 'dpf', 'scrAsc', 'muffler', 'ecu', 'turbocharger'];
+            photoIds.forEach(id => {
+                const preview = document.getElementById(id + 'Preview');
+                if (preview.src) {
+                    const img = document.createElement('img');
+                    img.src = preview.src;
+                    img.onclick = () => openModal(preview.src);
+                    newRow.appendChild(img);
+                }
+            });
+
+            // 添加到汇总区域
+            photoSummary.appendChild(newRow);
+        }
+
+        // 预览图片
+        function previewImage(input) {
+            const preview = document.getElementById(input.id + 'Preview');
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                    preview.onclick = () => openModal(preview.src);
+                };
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                preview.src = '';
+                preview.style.display = 'none';
+            }
+        }
+
+        // 打开模态框
+        function openModal(src) {
+            const modal = document.getElementById('imageModal');
+            const modalImage = document.getElementById('modalImage');
+            modalImage.src = src;
+            modal.style.display = 'flex';
+        }
+
+        // 关闭模态框
+        function closeModal() {
+            const modal = document.getElementById('imageModal');
+            modal.style.display = 'none';
+        }
+
+        // 点击模态框外部关闭
+        window.onclick = function (event) {
+            const modal = document.getElementById('imageModal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        };
+
+        // 导出为CSV
+        function exportToCSV() {
+            const rows = document.querySelectorAll("#summaryTable tr");
+            let csvContent = "\uFEFF"; // 添加 BOM 头，确保 Excel 正确识别 UTF-8 编码
+
+            rows.forEach(row => {
+                const rowData = [];
+                row.querySelectorAll("td, th").forEach(cell => {
+                    rowData.push(cell.innerText);
+                });
+                csvContent += rowData.join(",") + "\n";
+            });
+
+            const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", "data.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url); // 释放对象 URL
+        }
+    </script>
+</body>
+</html>

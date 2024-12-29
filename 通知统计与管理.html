@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>通知统计与管理</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            text-align: center;
+        }
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+        }
+        .stat-item {
+            text-align: center;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            width: 20%;
+        }
+        .stat-item h2 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .stat-item p {
+            margin: 0;
+            color: #666;
+        }
+        .notification-list {
+            margin-top: 20px;
+        }
+        .notification-item {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .notification-item button {
+            padding: 5px 10px;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .notification-item button:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <h1>通知统计与管理</h1>
+    <div class="stats">
+        <div class="stat-item">
+            <h2>120</h2>
+            <p>发送总数</p>
+        </div>
+        <div class="stat-item">
+            <h2>100</h2>
+            <p>已读数量</p>
+        </div>
+        <div class="stat-item">
+            <h2>20</h2>
+            <p>未读数量</p>
+        </div>
+        <div class="stat-item">
+            <h2>50</h2>
+            <p>反馈数量</p>
+        </div>
+    </div>
+    <div class="notification-list">
+        <div class="notification-item">
+            <span>通知1：关于系统升级的通知</span>
+            <button onclick="deleteNotification(1)">删除</button>
+        </div>
+        <div class="notification-item">
+            <span>通知2：关于数据填报的通知</span>
+            <button onclick="deleteNotification(2)">删除</button>
+        </div>
+        <div class="notification-item">
+            <span>通知3：关于环保车型的通知</span>
+            <button onclick="deleteNotification(3)">删除</button>
+        </div>
+    </div>
+
+    <script>
+        function deleteNotification(id) {
+            if (confirm('确定要删除该通知吗？')) {
+                alert('通知已删除！');
+            }
+        }
+    </script>
+</body>
+</html>

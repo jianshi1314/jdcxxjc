@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>环保并网审核</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .section {
+            margin-bottom: 30px;
+            border: 1px solid #ccc;
+            padding: 20px;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+        }
+        .section h2 {
+            margin-top: 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        table th, table td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: left;
+        }
+        table th {
+            background-color: #e9ecef;
+        }
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .buttons button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            font-size: 14px;
+        }
+        .buttons button:hover {
+            background-color: #0056b3;
+        }
+        .add-row-button {
+            margin-top: 10px;
+        }
+        .export-button {
+            background-color: #17a2b8;
+        }
+        .export-button:hover {
+            background-color: #138496;
+        }
+    </style>
+</head>
+<body>
+    <!-- 第一部分：环保并网审核 -->
+    <div class="section">
+        <h2>环保并网审核</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>企业名称</th>
+                    <th>车辆型号</th>
+                    <th>车架号</th>
+                    <th>申请状态</th>
+                    <th>查询日期</th>
+                    <th>截止日期</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><input type="text" id="companyName" placeholder="请输入企业名称"></td>
+                    <td><input type="text" id="vehicleModel" placeholder="请输入车辆型号"></td>
+                    <td><input type="text" id="frameNumber" placeholder="请输入车架号"></td>
+                    <td>
+                        <select id="applicationStatus">
+                            <option value="待审核">待审核</option>
+                            <option value="已通过">已通过</option>
+                            <option value="未通过">未通过</option>
+                        </select>
+                    </td>
+                    <td><input type="date" id="queryDate"></td>
+                    <td><input type="date" id="deadline"></td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="buttons">
+            <button onclick="queryData()">查询</button>
+            <button onclick="selectSupplement()">选择补传</button>
+        </div>
+    </div>
+
+    <!-- 第二部分：数据审核结果汇总 -->
+    <div class="section">
+        <h2>数据审核结果汇总</h2>
+        <div class="buttons">
+            <button onclick="saveData()">保存数据</button>
+            <button class="export-button" onclick="exportToCSV()">导出为 CSV</button>
+        </div>
+        <table id="summaryTable">
+            <thead>
+                <tr>
+                    <th>操作</th>
+                    <th>视频状态</th>
+                    <th>申请状态</th>
+                    <th>审核状态</th>
+                    <th>审核说明</th>
+                    <th>企业名称</th>
+                    <th>车辆型号</th>
+                    <th>车架号</th>
+                    <th>检测方法</th>
+                    <th>检测评价</th>
+                    <th>检测次数</th>
+                    <th>检测日期</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><button onclick="deleteRow(this)">删除</button></td>
+                    <td>
+                        <select>
+                            <option value="已完成">已完成</option>
+                            <option value="未完成">未完成</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select>
+                            <option value="待审核">待审核</option>
+                            <option value="已通过">已通过</option>
+                            <option value="未通过">未通过</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select>
+                            <option value="待审核">待审核</option>
+                            <option value="已通过">已通过</option>
+                            <option value="未通过">未通过</option>
+                        </select>
+                    </td>
+                    <td><input type="text" placeholder="审核说明"></td>
+                    <td><input type="text" placeholder="企业名称"></td>
+                    <td><input type="text" placeholder="车辆型号"></td>
+                    <td><input type="text" placeholder="车架号"></td>
+                    <td><input type="text" placeholder="检测方法"></td>
+                    <td><input type="text" placeholder="检测评价"></td>
+                    <td><input type="number" placeholder="检测次数"></td>
+                    <td><input type="date"></td>
+                </tr>
+            </tbody>
+        </table>
+        <button class="add-row-button" onclick="addRow()">增加一行</button>
+    </div>
+
+    <script>
+        // 用于存储录入的数据
+        let entries = [];
+
+        // 查询数据
+        function queryData() {
+            const companyName = document.getElementById('companyName').value;
+            const vehicleModel = document.getElementById('vehicleModel').value;
+            const frameNumber = document.getElementById('frameNumber').value;
+            const applicationStatus = document.getElementById('applicationStatus').value;
+            const queryDate = document.getElementById('queryDate').value;
+            const deadline = document.getElementById('deadline').value;
+
+            // 获取汇总表格中的所有行
+            const rows = document.querySelectorAll('#summaryTable tbody tr');
+            let results = [];
+
+            rows.forEach(row => {
+                const rowCompanyName = row.querySelector('td:nth-child(6) input').value;
+                const rowVehicleModel = row.querySelector('td:nth-child(7) input').value;
+                const rowFrameNumber = row.querySelector('td:nth-child(8) input').value;
+                const rowApplicationStatus = row.querySelector('td:nth-child(3) select').value;
+
+                // 检查是否匹配查询条件
+                if (
+                    (!companyName || rowCompanyName.includes(companyName)) &&
+                    (!vehicleModel || rowVehicleModel.includes(vehicleModel)) &&
+                    (!frameNumber || rowFrameNumber.includes(frameNumber)) &&
+                    (!applicationStatus || rowApplicationStatus === applicationStatus)
+                ) {
+                    results.push({
+                        companyName: rowCompanyName,
+                        vehicleModel: rowVehicleModel,
+                        frameNumber: rowFrameNumber,
+                        applicationStatus: rowApplicationStatus
+                    });
+                }
+            });
+
+            if (results.length > 0) {
+                alert(`查询结果：\n${JSON.stringify(results, null, 2)}`);
+            } else {
+                alert("未找到匹配的数据！");
+            }
+        }
+
+        // 选择补传
+        function selectSupplement() {
+            alert("选择补传功能");
+            // 这里可以添加实际的选择补传逻辑
+        }
+
+        // 增加一行
+        function addRow() {
+            const table = document.getElementById('summaryTable').getElementsByTagName('tbody')[0];
+            const newRow = table.insertRow();
+            newRow.innerHTML = `
+                <td><button onclick="deleteRow(this)">删除</button></td>
+                <td>
+                    <select>
+                        <option value="已完成">已完成</option>
+                        <option value="未完成">未完成</option>
+                    </select>
+                </td>
+                <td>
+                    <select>
+                        <option value="待审核">待审核</option>
+                        <option value="已通过">已通过</option>
+                        <option value="未通过">未通过</option>
+                    </select>
+                </td>
+                <td>
+                    <select>
+                        <option value="待审核">待审核</option>
+                        <option value="已通过">已通过</option>
+                        <option value="未通过">未通过</option>
+                    </select>
+                </td>
+                <td><input type="text" placeholder="审核说明"></td>
+                <td><input type="text" placeholder="企业名称"></td>
+                <td><input type="text" placeholder="车辆型号"></td>
+                <td><input type="text" placeholder="车架号"></td>
+                <td><input type="text" placeholder="检测方法"></td>
+                <td><input type="text" placeholder="检测评价"></td>
+                <td><input type="number" placeholder="检测次数"></td>
+                <td><input type="date"></td>
+            `;
+        }
+
+        // 删除一行
+        function deleteRow(button) {
+            const row = button.parentElement.parentElement;
+            row.remove();
+        }
+
+        // 保存数据到 LocalStorage
+        function saveData() {
+            const rows = document.querySelectorAll('#summaryTable tbody tr');
+            entries = [];
+
+            rows.forEach(row => {
+                const videoStatus = row.querySelector('td:nth-child(2) select').value;
+                const applicationStatus = row.querySelector('td:nth-child(3) select').value;
+                const auditStatus = row.querySelector('td:nth-child(4) select').value;
+                const auditNote = row.querySelector('td:nth-child(5) input').value;
+                const companyName = row.querySelector('td:nth-child(6) input').value;
+                const vehicleModel = row.querySelector('td:nth-child(7) input').value;
+                const frameNumber = row.querySelector('td:nth-child(8) input').value;
+                const testMethod = row.querySelector('td:nth-child(9) input').value;
+                const testEvaluation = row.querySelector('td:nth-child(10) input').value;
+                const testCount = row.querySelector('td:nth-child(11) input').value;
+                const testDate = row.querySelector('td:nth-child(12) input').value;
+
+                entries.push({
+                    videoStatus,
+                    applicationStatus,
+                    auditStatus,
+                    auditNote,
+                    companyName,
+                    vehicleModel,
+                    frameNumber,
+                    testMethod,
+                    testEvaluation,
+                    testCount,
+                    testDate
+                });
+            });
+
+            if (entries.length > 0) {
+                localStorage.setItem('auditData', JSON.stringify(entries));
+                alert('数据已保存到本地！');
+            } else {
+                alert('没有数据可保存！');
+            }
+        }
+
+        // 导出数据为 CSV 文件
+        function exportToCSV() {
+            if (entries.length === 0) {
+                alert('没有数据可导出！');
+                return;
+            }
+
+            // 创建 CSV 内容
+            const headers = [
+                '视频状态', '申请状态', '审核状态', '审核说明', '企业名称', '车辆型号',
+                '车架号', '检测方法', '检测评价', '检测次数', '检测日期'
+            ];
+            const rows = entries.map(entry => [
+                entry.videoStatus,
+                entry.applicationStatus,
+                entry.auditStatus,
+                entry.auditNote,
+                entry.companyName,
+                entry.vehicleModel,
+                entry.frameNumber,
+                entry.testMethod,
+                entry.testEvaluation,
+                entry.testCount,
+                entry.testDate
+            ]);
+
+            // 添加 BOM 头，确保 Excel 正确识别 UTF-8 编码
+            const BOM = '\uFEFF'; // BOM 头
+            const csvContent = BOM + [headers, ...rows].map(row => row.join(',')).join('\n');
+
+            // 创建下载链接
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = '数据审核结果.csv';
+            link.click();
+        }
+
+        // 页面加载时加载数据
+        function loadData() {
+            const savedData = localStorage.getItem('auditData');
+            if (savedData) {
+                entries = JSON.parse(savedData);
+                updateSummaryTable();
+            }
+        }
+
+        // 更新汇总表格
+        function updateSummaryTable() {
+            const tbody = document.querySelector('#summaryTable tbody');
+            tbody.innerHTML = ''; // 清空现有内容
+
+            entries.forEach(entry => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><button onclick="deleteRow(this)">删除</button></td>
+                    <td>
+                        <select>
+                            <option value="已完成" ${entry.videoStatus === '已完成' ? 'selected' : ''}>已完成</option>
+                            <option value="未完成" ${entry.videoStatus === '未完成' ? 'selected' : ''}>未完成</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select>
+                            <option value="待审核" ${entry.applicationStatus === '待审核' ? 'selected' : ''}>待审核</option>
+                            <option value="已通过" ${entry.applicationStatus === '已通过' ? 'selected' : ''}>已通过</option>
+                            <option value="未通过" ${entry.applicationStatus === '未通过' ? 'selected' : ''}>未通过</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select>
+                            <option value="待审核" ${entry.auditStatus === '待审核' ? 'selected' : ''}>待审核</option>
+                            <option value="已通过" ${entry.auditStatus === '已通过' ? 'selected' : ''}>已通过</option>
+                            <option value="未通过" ${entry.auditStatus === '未通过' ? 'selected' : ''}>未通过</option>
+                        </select>
+                    </td>
+                    <td><input type="text" value="${entry.auditNote || ''}" placeholder="审核说明"></td>
+                    <td><input type="text" value="${entry.companyName || ''}" placeholder="企业名称"></td>
+                    <td><input type="text" value="${entry.vehicleModel || ''}" placeholder="车辆型号"></td>
+                    <td><input type="text" value="${entry.frameNumber || ''}" placeholder="车架号"></td>
+                    <td><input type="text" value="${entry.testMethod || ''}" placeholder="检测方法"></td>
+                    <td><input type="text" value="${entry.testEvaluation || ''}" placeholder="检测评价"></td>
+                    <td><input type="number" value="${entry.testCount || ''}" placeholder="检测次数"></td>
+                    <td><input type="date" value="${entry.testDate || ''}"></td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // 页面加载时加载数据
+        window.onload = loadData;
+    </script>
+</body>
+</html>

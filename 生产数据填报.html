@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>生产数据填报</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .section {
+            margin-bottom: 30px;
+            border: 1px solid #ccc;
+            padding: 20px;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+        }
+        .section h2 {
+            margin-top: 0;
+        }
+        .input-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .input-column {
+            flex: 1;
+        }
+        .input-column label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .input-column input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .buttons button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            font-size: 14px;
+        }
+        .buttons button:hover {
+            background-color: #0056b3;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        table th, table td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: left;
+        }
+        table th {
+            background-color: #e9ecef;
+        }
+        .edit-button {
+            background-color: #28a745;
+        }
+        .edit-button:hover {
+            background-color: #218838;
+        }
+        .export-button {
+            background-color: #17a2b8;
+        }
+        .export-button:hover {
+            background-color: #138496;
+        }
+    </style>
+</head>
+<body>
+    <!-- 第一部分：生产数据录入 -->
+    <div class="section">
+        <h2>生产数据录入</h2>
+        <div class="input-row">
+            <div class="input-column">
+                <label for="companyName">企业名称:</label>
+                <input type="text" id="companyName" placeholder="请输入企业名称">
+            </div>
+            <div class="input-column">
+                <label for="vehicleModel">车辆型号:</label>
+                <input type="text" id="vehicleModel" placeholder="请输入车辆型号">
+            </div>
+            <div class="input-column">
+                <label for="productionQuantity">生产数量:</label>
+                <input type="number" id="productionQuantity" placeholder="请输入生产数量">
+            </div>
+            <div class="input-column">
+                <label for="productionDate">生产日期:</label>
+                <input type="date" id="productionDate">
+            </div>
+        </div>
+        <div class="buttons">
+            <button onclick="saveData()">保存</button>
+        </div>
+    </div>
+
+    <!-- 第二部分：生产数据汇总 -->
+    <div class="section">
+        <h2>生产数据汇总</h2>
+        <div class="buttons">
+            <button onclick="saveToLocalStorage()">保存数据</button>
+            <button class="export-button" onclick="exportToCSV()">导出为 CSV</button>
+        </div>
+        <table id="summaryTable">
+            <thead>
+                <tr>
+                    <th>企业名称</th>
+                    <th>车辆型号</th>
+                    <th>生产数量</th>
+                    <th>生产日期</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- 动态添加的行将显示在这里 -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // 用于存储录入的数据
+        let entries = [];
+
+        // 保存数据到表格
+        function saveData() {
+            const companyName = document.getElementById('companyName').value;
+            const vehicleModel = document.getElementById('vehicleModel').value;
+            const productionQuantity = document.getElementById('productionQuantity').value;
+            const productionDate = document.getElementById('productionDate').value;
+
+            // 检查所有字段是否已填写
+            if (companyName && vehicleModel && productionQuantity && productionDate) {
+                // 添加到数组
+                entries.push({
+                    companyName,
+                    vehicleModel,
+                    productionQuantity,
+                    productionDate
+                });
+
+                // 更新表格
+                updateSummaryTable();
+
+                // 清空输入框
+                document.getElementById('companyName').value = '';
+                document.getElementById('vehicleModel').value = '';
+                document.getElementById('productionQuantity').value = '';
+                document.getElementById('productionDate').value = '';
+            } else {
+                alert('请填写所有字段！');
+            }
+        }
+
+        // 更新汇总表格
+        function updateSummaryTable() {
+            const tbody = document.querySelector('#summaryTable tbody');
+            tbody.innerHTML = ''; // 清空现有内容
+
+            entries.forEach(entry => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${entry.companyName}</td>
+                    <td>${entry.vehicleModel}</td>
+                    <td>${entry.productionQuantity}</td>
+                    <td>${entry.productionDate}</td>
+                    <td><button class="edit-button" onclick="editRow(this)">编辑</button></td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // 编辑数据
+        function editRow(button) {
+            const row = button.parentElement.parentElement;
+            const cells = row.getElementsByTagName('td');
+
+            // 将表格内容填充到输入框
+            document.getElementById('companyName').value = cells[0].textContent;
+            document.getElementById('vehicleModel').value = cells[1].textContent;
+            document.getElementById('productionQuantity').value = cells[2].textContent;
+            document.getElementById('productionDate').value = cells[3].textContent;
+
+            // 删除当前行
+            const index = Array.from(row.parentElement.children).indexOf(row);
+            entries.splice(index, 1);
+            row.remove();
+        }
+
+        // 保存数据到 LocalStorage
+        function saveToLocalStorage() {
+            if (entries.length > 0) {
+                localStorage.setItem('productionData', JSON.stringify(entries));
+                alert('数据已保存到本地！');
+            } else {
+                alert('没有数据可保存！');
+            }
+        }
+
+        // 导出数据为 CSV 文件
+        function exportToCSV() {
+            if (entries.length === 0) {
+                alert('没有数据可导出！');
+                return;
+            }
+
+            // 创建 CSV 内容
+            const headers = ['企业名称', '车辆型号', '生产数量', '生产日期'];
+            const rows = entries.map(entry => [
+                entry.companyName,
+                entry.vehicleModel,
+                entry.productionQuantity,
+                entry.productionDate
+            ]);
+
+            // 添加 BOM 头，确保 Excel 正确识别 UTF-8 编码
+            const BOM = '\uFEFF'; // BOM 头
+            const csvContent = BOM + [headers, ...rows].map(row => row.join(',')).join('\n');
+
+            // 创建下载链接
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = '生产数据.csv';
+            link.click();
+        }
+
+        // 页面加载时加载数据
+        function loadData() {
+            const savedData = localStorage.getItem('productionData');
+            if (savedData) {
+                entries = JSON.parse(savedData);
+                updateSummaryTable();
+            }
+        }
+
+        // 页面加载时加载数据
+        window.onload = loadData;
+    </script>
+</body>
+</html>

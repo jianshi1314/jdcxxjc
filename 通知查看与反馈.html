@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>通知查看与反馈</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            text-align: center;
+        }
+        .container {
+            display: flex;
+        }
+        .notification-list {
+            width: 30%;
+            border-right: 1px solid #ddd;
+            padding-right: 10px;
+        }
+        .notification-detail {
+            width: 70%;
+            padding-left: 10px;
+        }
+        .notification-item {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            cursor: pointer;
+        }
+        .notification-item:hover {
+            background-color: #f4f4f4;
+        }
+        .notification-item.active {
+            background-color: #007bff;
+            color: white;
+        }
+        .feedback-form {
+            margin-top: 20px;
+        }
+        .feedback-form textarea {
+            width: 100%;
+            height: 100px;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        .feedback-form button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .feedback-form button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>通知查看与反馈</h1>
+    <div class="container">
+        <div class="notification-list">
+            <div class="notification-item active" onclick="showNotification(1)">
+                通知1：关于系统升级的通知
+            </div>
+            <div class="notification-item" onclick="showNotification(2)">
+                通知2：关于数据填报的通知
+            </div>
+            <div class="notification-item" onclick="showNotification(3)">
+                通知3：关于环保车型的通知
+            </div>
+        </div>
+        <div class="notification-detail">
+            <h2 id="notificationTitle">关于系统升级的通知</h2>
+            <p id="notificationContent">系统将于2023年10月15日进行升级，请提前做好准备。</p>
+            <div class="feedback-form">
+                <textarea id="feedbackContent" placeholder="请输入反馈内容"></textarea>
+                <button onclick="submitFeedback()">提交反馈</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showNotification(id) {
+            const items = document.querySelectorAll('.notification-item');
+            items.forEach(item => item.classList.remove('active'));
+            items[id - 1].classList.add('active');
+
+            // 模拟加载通知详情
+            const titles = ['关于系统升级的通知', '关于数据填报的通知', '关于环保车型的通知'];
+            const contents = [
+                '系统将于2023年10月15日进行升级，请提前做好准备。',
+                '请于2023年10月20日前完成数据填报工作。',
+                '请及时更新环保车型信息，确保数据准确。'
+            ];
+            document.getElementById('notificationTitle').textContent = titles[id - 1];
+            document.getElementById('notificationContent').textContent = contents[id - 1];
+        }
+
+        function submitFeedback() {
+            const feedback = document.getElementById('feedbackContent').value;
+            if (feedback) {
+                alert('反馈已提交！');
+            } else {
+                alert('请输入反馈内容！');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>首页</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+        }
+        .sidebar {
+            width: 200px;
+            background-color: #f4f4f4;
+            padding: 20px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; /* 将内容分布在顶部和底部 */
+        }
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+        .sidebar ul li {
+            margin-bottom: 10px;
+        }
+        .sidebar ul li a {
+            text-decoration: none;
+            color: #333;
+            font-size: 16px;
+        }
+        .sidebar ul li a:hover {
+            color: #007bff;
+        }
+        .sidebar ul ul {
+            margin-left: 20px;
+            margin-top: 5px;
+            display: none; /* 默认隐藏子菜单 */
+        }
+        .sidebar ul li.active ul {
+            display: block; /* 展开子菜单 */
+        }
+        .content {
+            flex: 1;
+            padding: 20px;
+        }
+        iframe {
+            width: 100%;
+            height: 100vh;
+            border: none;
+        }
+        #map {
+            width: 100%;
+            height: 100vh;
+            border: none;
+        }
+        .hidden {
+            display: none;
+        }
+        .welcome-message {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .logout-button {
+            background-color: #dc3545;
+            color: #fff;
+            border: none;
+            padding: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+        }
+        .logout-button:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <!-- 左侧栏目 -->
+    <div class="sidebar">
+        <!-- 欢迎信息 -->
+        <div class="welcome-message" id="welcomeMessage"></div>
+
+        <!-- 菜单 -->
+        <ul>
+            <li><a href="#" onclick="loadHomePage()">新生产机动车下线检测平台方案</a></li>
+            <li class="submenu">
+                <a href="#" onclick="toggleSubMenu(event)">企业端</a>
+                <ul>
+                    <li><a href="#" onclick="loadPage('企业信息备案.html')">企业信息备案</a></li>
+                    <li><a href="#" onclick="loadPage('车型信息查询.html')">车型信息查询</a></li>
+                    <li><a href="#" onclick="loadPage('环保车型信息维护.html')">环保车型信息维护</a></li>
+                    <li><a href="#" onclick="loadPage('下线检查数据收集.html')">下线检查数据收集</a></li>
+                    <li class="submenu">
+                        <a href="#" onclick="toggleSubMenu(event)">下线数据检查汇总</a>
+                        <ul>
+                            <li><a href="#" onclick="loadPage('数据审核.html')">数据审核</a></li>
+                            <li><a href="#" onclick="loadPage('数据详情.html')">数据详情</a></li>
+                            <li><a href="#" onclick="loadPage('生产数据填报.html')">生产数据填报</a></li>
+                            <li><a href="#" onclick="loadPage('自查汇总.html')">自查汇总</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+            <li class="submenu admin-only">
+                <a href="#" onclick="toggleSubMenu(event)">管理端</a>
+                <ul>
+                    <li><a href="#" onclick="loadPage('企业信息汇总.html')">企业信息汇总</a></li>
+                    <li><a href="#" onclick="loadPage('环保车型信息汇总.html')">环保车型信息汇总</a></li>
+                    <li><a href="#" onclick="loadPage('企业自查汇总.html')">企业自查汇总</a></li>
+                </ul>
+            </li>
+            <li class="submenu admin-only">
+                <a href="#" onclick="toggleSubMenu(event)">通知管理</a>
+                <ul>
+                    <li><a href="#" onclick="loadPage('通知创建与发送.html')">通知创建与发送</a></li>
+                    <li><a href="#" onclick="loadPage('通知查看与反馈.html')">通知查看与反馈</a></li>
+                    <li><a href="#" onclick="loadPage('通知统计与管理.html')">通知统计与管理</a></li>
+                </ul>
+            </li>
+            <li class="submenu admin-only">
+                <a href="#" onclick="toggleSubMenu(event)">用户权限</a>
+                <ul>
+                    <li><a href="#" onclick="loadPage('登录界面.html')">登录界面</a></li>
+                    <li><a href="#" onclick="loadPage('企业用户主页.html')">企业用户主页</a></li>
+                    <li><a href="#" onclick="loadPage('管理用户主页.html')">管理用户主页</a></li>
+                </ul>
+            </li>
+        </ul>
+
+        <!-- 退出按钮 -->
+        <button class="logout-button" onclick="logout()">退出</button>
+    </div>
+
+    <!-- 右侧内容区域 -->
+    <div class="content">
+        <iframe id="contentFrame" src="https://www.amap.com/" style="display: none;"></iframe>
+        <div id="map">
+            <!-- 河南省地图 -->
+            <iframe src="https://www.amap.com/search?query=%E6%B2%B3%E5%8D%97%E7%9C%81&city=410000" width="100%" height="100%" frameborder="0"></iframe>
+        </div>
+    </div>
+
+    <script>
+        // 根据用户角色控制界面显示
+        const userRole = sessionStorage.getItem('userRole');
+        if (!userRole) {
+            // 如果没有登录，跳转到登录页面
+            window.location.href = 'login.html';
+        } else {
+            // 显示欢迎信息
+            document.getElementById('welcomeMessage').innerText = `欢迎你，${userRole}`;
+            if (userRole === 'user1') {
+                // 如果是 user1，隐藏管理端、通知管理和用户权限
+                document.querySelectorAll('.admin-only').forEach(el => el.classList.add('hidden'));
+            }
+        }
+
+        // 加载页面的函数
+        function loadPage(page) {
+            document.getElementById('contentFrame').src = page || 'about:blank';
+            document.getElementById('contentFrame').style.display = 'block';
+            document.getElementById('map').style.display = 'none';
+        }
+
+        // 加载首页的函数
+        function loadHomePage() {
+            document.getElementById('contentFrame').style.display = 'none';
+            document.getElementById('map').style.display = 'block';
+        }
+
+        // 切换子菜单显示/隐藏的函数
+        function toggleSubMenu(event) {
+            event.preventDefault(); // 阻止默认链接行为
+            const parentLi = event.target.parentElement; // 获取父级 li 元素
+            parentLi.classList.toggle('active'); // 切换 active 类
+        }
+
+        // 退出函数
+        function logout() {
+            // 清除 sessionStorage 中的用户角色
+            sessionStorage.removeItem('userRole');
+            // 跳转到登录页面
+            window.location.href = 'login.html';
+        }
+
+        // 默认显示首页
+        loadHomePage();
+    </script>
+</body>
+</html>

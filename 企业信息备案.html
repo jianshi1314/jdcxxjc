@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>企业信息备案</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            margin-bottom: 20px;
+        }
+        .input-section, .summary-section {
+            border: 1px solid #ccc;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        .input-section label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .input-section input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .input-section button {
+            padding: 10px 20px;
+            margin-right: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+        }
+        .input-section button:hover {
+            background-color: #0056b3;
+        }
+        .summary-section table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .summary-section th, .summary-section td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: left;
+        }
+        .summary-section th {
+            background-color: #f8f9fa;
+        }
+        .input-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .input-column {
+            flex: 1;
+        }
+        .summary-section button {
+            padding: 10px 20px;
+            margin-right: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #28a745;
+            color: white;
+        }
+        .summary-section button.export {
+            background-color: #17a2b8;
+        }
+        .summary-section button:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 第一部分：录入信息 -->
+        <div class="input-section">
+            <h2>企业信息录入</h2>
+            <div class="input-row">
+                <div class="input-column">
+                    <label for="province">省份:</label>
+                    <input type="text" id="province" placeholder="请输入省份">
+                    <label for="district">区县:</label>
+                    <input type="text" id="district" placeholder="请输入区县">
+                    <label for="businessCode">工商管理代码:</label>
+                    <input type="text" id="businessCode" placeholder="请输入工商管理代码">
+                    <label for="contactPerson">日常联系人:</label>
+                    <input type="text" id="contactPerson" placeholder="请输入日常联系人">
+                    <label for="contactPhone">日常联系人电话:</label>
+                    <input type="text" id="contactPhone" placeholder="请输入日常联系人电话">
+                </div>
+                <div class="input-column">
+                    <label for="city">城市:</label>
+                    <input type="text" id="city" placeholder="请输入城市">
+                    <label for="companyName">企业名称:</label>
+                    <input type="text" id="companyName" placeholder="请输入企业名称">
+                    <label for="productionAddress">生产地址:</label>
+                    <input type="text" id="productionAddress" placeholder="请输入生产地址">
+                    <label for="contactId">日常联系人身份证号:</label>
+                    <input type="text" id="contactId" placeholder="请输入日常联系人身份证号">
+                </div>
+            </div>
+            <button onclick="addEntry()">提交</button>
+        </div>
+
+        <!-- 第二部分：汇总信息 -->
+        <div class="summary-section">
+            <h2>企业信息汇总</h2>
+            <button onclick="saveData()">保存数据</button>
+            <button class="export" onclick="exportToCSV()">导出为 CSV</button>
+            <table id="summaryTable">
+                <thead>
+                    <tr>
+                        <th>省份</th>
+                        <th>城市</th>
+                        <th>区县</th>
+                        <th>企业名称</th>
+                        <th>工商管理代码</th>
+                        <th>生产地址</th>
+                        <th>日常联系人</th>
+                        <th>日常联系人身份证号</th>
+                        <th>日常联系人电话</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- 动态添加的行将显示在这里 -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // 用于存储录入的数据
+        let entries = [];
+
+        // 增加条目
+        function addEntry() {
+            const province = document.getElementById('province').value;
+            const city = document.getElementById('city').value;
+            const district = document.getElementById('district').value;
+            const companyName = document.getElementById('companyName').value;
+            const businessCode = document.getElementById('businessCode').value;
+            const productionAddress = document.getElementById('productionAddress').value;
+            const contactPerson = document.getElementById('contactPerson').value;
+            const contactId = document.getElementById('contactId').value;
+            const contactPhone = document.getElementById('contactPhone').value;
+
+            // 添加到数组（允许部分字段为空）
+            entries.push({
+                province,
+                city,
+                district,
+                companyName,
+                businessCode,
+                productionAddress,
+                contactPerson,
+                contactId,
+                contactPhone
+            });
+
+            // 更新表格
+            updateSummaryTable();
+
+            // 清空输入框
+            document.getElementById('province').value = '';
+            document.getElementById('city').value = '';
+            document.getElementById('district').value = '';
+            document.getElementById('companyName').value = '';
+            document.getElementById('businessCode').value = '';
+            document.getElementById('productionAddress').value = '';
+            document.getElementById('contactPerson').value = '';
+            document.getElementById('contactId').value = '';
+            document.getElementById('contactPhone').value = '';
+        }
+
+        // 更新汇总表格
+        function updateSummaryTable() {
+            const tbody = document.querySelector('#summaryTable tbody');
+            tbody.innerHTML = ''; // 清空现有内容
+
+            entries.forEach(entry => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${entry.province || ''}</td>
+                    <td>${entry.city || ''}</td>
+                    <td>${entry.district || ''}</td>
+                    <td>${entry.companyName || ''}</td>
+                    <td>${entry.businessCode || ''}</td>
+                    <td>${entry.productionAddress || ''}</td>
+                    <td>${entry.contactPerson || ''}</td>
+                    <td>${entry.contactId || ''}</td>
+                    <td>${entry.contactPhone || ''}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // 保存数据到 LocalStorage
+        function saveData() {
+            if (entries.length > 0) {
+                localStorage.setItem('companyData', JSON.stringify(entries));
+                alert('数据已保存到本地！');
+            } else {
+                alert('没有数据可保存！');
+            }
+        }
+
+        // 导出数据为 CSV 文件
+        function exportToCSV() {
+            if (entries.length === 0) {
+                alert('没有数据可导出！');
+                return;
+            }
+
+            // 创建 CSV 内容
+            const headers = [
+                '省份', '城市', '区县', '企业名称', '工商管理代码', '生产地址',
+                '日常联系人', '日常联系人身份证号', '日常联系人电话'
+            ];
+            const rows = entries.map(entry => [
+                entry.province || '',
+                entry.city || '',
+                entry.district || '',
+                entry.companyName || '',
+                entry.businessCode || '',
+                entry.productionAddress || '',
+                entry.contactPerson || '',
+                entry.contactId || '',
+                entry.contactPhone || ''
+            ]);
+
+            // 添加 BOM 头，确保 Excel 正确识别 UTF-8 编码
+            const BOM = '\uFEFF'; // BOM 头
+            const csvContent = BOM + [headers, ...rows].map(row => row.join(',')).join('\n');
+
+            // 创建下载链接
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = '企业信息.csv';
+            link.click();
+        }
+
+        // 页面加载时加载数据
+        function loadData() {
+            const savedData = localStorage.getItem('companyData');
+            if (savedData) {
+                entries = JSON.parse(savedData);
+                updateSummaryTable();
+            }
+        }
+
+        // 页面加载时加载数据
+        window.onload = loadData;
+    </script>
+</body>
+</html>

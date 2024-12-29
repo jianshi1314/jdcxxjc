@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>下线检查数据收集</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .header {
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .header p {
+            margin: 0;
+            font-size: 16px;
+            color: #333;
+        }
+        .buttons {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .buttons button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            font-size: 14px;
+        }
+        .buttons button:hover {
+            background-color: #0056b3;
+        }
+        .arrow {
+            font-size: 20px;
+            color: #333;
+        }
+        .content {
+            border: 1px solid #ccc;
+            padding: 20px;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+        }
+        .content h3 {
+            margin-top: 0;
+        }
+        .content pre {
+            background-color: #fff;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <!-- 提示信息 -->
+    <div class="header">
+        <p>根据相关通讯协议，提供给厂家环保设备供应商，对接接口并提供数据。</p>
+    </div>
+
+    <!-- 功能按钮 -->
+    <div class="buttons">
+        <button onclick="showDataInterface()">数据接口</button>
+        <span class="arrow">→</span>
+        <button onclick="startDetection()">开始检测</button>
+        <span class="arrow">→</span>
+        <button onclick="showResultData()">结果数据</button>
+        <span class="arrow">→</span>
+        <button onclick="showProcessData()">过程数据</button>
+        <span class="arrow">→</span>
+        <button onclick="endDetection()">结束检测</button>
+    </div>
+
+    <!-- 内容显示区域 -->
+    <div class="content" id="contentArea">
+        <h3>功能说明</h3>
+        <p>点击上方按钮查看相应功能。</p>
+    </div>
+
+    <script>
+        // 显示数据接口
+        function showDataInterface() {
+            const contentArea = document.getElementById('contentArea');
+            contentArea.innerHTML = `
+                <h3>数据接口</h3>
+                <pre>
+{
+    "接口名称": "环保设备数据接口",
+    "协议类型": "HTTP/HTTPS",
+    "请求方式": "POST",
+    "请求地址": "https://api.example.com/device-data",
+    "请求参数": {
+        "设备ID": "string",
+        "检测时间": "string",
+        "检测数据": "object"
+    },
+    "返回结果": {
+        "状态码": "number",
+        "消息": "string",
+        "数据": "object"
+    }
+}
+                </pre>
+            `;
+        }
+
+        // 开始检测
+        function startDetection() {
+            const contentArea = document.getElementById('contentArea');
+            contentArea.innerHTML = `
+                <h3>开始检测</h3>
+                <p>检测已启动，请稍后查看结果数据或过程数据。</p>
+            `;
+            // 这里可以添加实际的检测逻辑
+        }
+
+        // 显示结果数据
+        function showResultData() {
+            const contentArea = document.getElementById('contentArea');
+            contentArea.innerHTML = `
+                <h3>结果数据</h3>
+                <pre>
+{
+    "设备ID": "12345",
+    "检测时间": "2023-10-01 12:00:00",
+    "检测结果": "合格",
+    "详细数据": {
+        "排放量": "0.5mg/m³",
+        "温度": "25℃",
+        "湿度": "60%"
+    }
+}
+                </pre>
+            `;
+        }
+
+        // 显示过程数据
+        function showProcessData() {
+            const contentArea = document.getElementById('contentArea');
+            contentArea.innerHTML = `
+                <h3>过程数据</h3>
+                <pre>
+{
+    "设备ID": "12345",
+    "检测时间": "2023-10-01 12:00:00",
+    "过程数据": [
+        {
+            "时间": "12:00:00",
+            "排放量": "0.5mg/m³",
+            "温度": "25℃",
+            "湿度": "60%"
+        },
+        {
+            "时间": "12:01:00",
+            "排放量": "0.6mg/m³",
+            "温度": "26℃",
+            "湿度": "61%"
+        }
+    ]
+}
+                </pre>
+            `;
+        }
+
+        // 结束检测
+        function endDetection() {
+            const contentArea = document.getElementById('contentArea');
+            contentArea.innerHTML = `
+                <h3>结束检测</h3>
+                <p>检测已结束，感谢您的使用。</p>
+            `;
+            // 这里可以添加实际的结束检测逻辑
+        }
+    </script>
+</body>
+</html>

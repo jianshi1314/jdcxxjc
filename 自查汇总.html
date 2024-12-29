@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>自查汇总</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        input[type="text"], input[type="number"] {
+            padding: 5px;
+            width: 100%;
+        }
+        select {
+            padding: 5px;
+            width: 100%;
+        }
+        button {
+            padding: 5px 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .notes {
+            font-size: 14px;
+            color: #666;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>自查汇总</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>企业名称</th>
+                <th>车辆型号</th>
+                <th>生产数量</th>
+                <th>自查数量</th>
+                <th>自查比率</th>
+                <th>企业设定比率</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody">
+            <tr>
+                <td><input type="text" class="companyName" placeholder="输入企业名称"></td>
+                <td><input type="text" class="vehicleModel" placeholder="输入车辆型号"></td>
+                <td><input type="number" class="production" value="0" onchange="calculateRatio(this)"></td>
+                <td><input type="number" class="inspection" value="0" onchange="calculateRatio(this)"></td>
+                <td class="ratio">0%</td>
+                <td>
+                    <select class="targetRatio">
+                        <option value="15">15%</option>
+                        <option value="30">30%</option>
+                        <option value="50">50%</option>
+                    </select>
+                </td>
+                <td><button onclick="sendMessage(this)">发送信息</button></td>
+            </tr>
+        </tbody>
+    </table>
+    <button onclick="saveData()">保存数据</button>
+    <button onclick="exportToCSV()">导出为 CSV</button>
+    <div class="notes">
+        <p>注释：</p>
+        <ul>
+            <li>设定自抽查比率，调用企业填报的生产数据设定，按周或月更新。</li>
+            <li>自查比率 = 自查数量 / 生产数量，自动计算并以百分比表示。</li>
+        </ul>
+    </div>
+
+    <script>
+        // 计算自查比率
+        function calculateRatio(input) {
+            const row = input.closest('tr');
+            const production = parseFloat(row.querySelector('.production').value);
+            const inspection = parseFloat(row.querySelector('.inspection').value);
+            const ratio = (inspection / production) * 100 || 0; // 避免除以0
+            row.querySelector('.ratio').textContent = ratio.toFixed(2) + '%';
+        }
+
+        // 发送信息并添加新行
+        function sendMessage(button) {
+            const row = button.closest('tr');
+            const companyName = row.querySelector('.companyName').value;
+            const vehicleModel = row.querySelector('.vehicleModel').value;
+            const targetRatio = row.querySelector('.targetRatio').value;
+
+            if (!companyName || !vehicleModel) {
+                alert("请填写企业名称和车辆型号！");
+                return;
+            }
+
+            alert(`已发送信息给企业：${companyName}，车辆型号：${vehicleModel}，设定比率为 ${targetRatio}%`);
+
+            // 添加新的一行
+            addRow();
+        }
+
+        // 添加新行
+        function addRow() {
+            const tableBody = document.getElementById('tableBody');
+            const newRow = document.createElement('tr');
+
+            newRow.innerHTML = `
+                <td><input type="text" class="companyName" placeholder="输入企业名称"></td>
+                <td><input type="text" class="vehicleModel" placeholder="输入车辆型号"></td>
+                <td><input type="number" class="production" value="0" onchange="calculateRatio(this)"></td>
+                <td><input type="number" class="inspection" value="0" onchange="calculateRatio(this)"></td>
+                <td class="ratio">0%</td>
+                <td>
+                    <select class="targetRatio">
+                        <option value="15">15%</option>
+                        <option value="30">30%</option>
+                        <option value="50">50%</option>
+                    </select>
+                </td>
+                <td><button onclick="sendMessage(this)">发送信息</button></td>
+            `;
+
+            tableBody.appendChild(newRow);
+        }
+
+        // 保存数据到 LocalStorage
+        function saveData() {
+            const rows = [];
+            document.querySelectorAll('tr').forEach(row => {
+                const companyName = row.querySelector('.companyName').value;
+                const vehicleModel = row.querySelector('.vehicleModel').value;
+                const production = row.querySelector('.production').value;
+                const inspection = row.querySelector('.inspection').value;
+                const targetRatio = row.querySelector('.targetRatio').value;
+
+                if (companyName && vehicleModel) {
+                    rows.push({ companyName, vehicleModel, production, inspection, targetRatio });
+                }
+            });
+            localStorage.setItem('inspectionData', JSON.stringify(rows));
+            alert('数据已保存！');
+        }
+
+        // 加载数据
+        function loadData() {
+            const data = JSON.parse(localStorage.getItem('inspectionData'));
+            if (data) {
+                const tableBody = document.getElementById('tableBody');
+                tableBody.innerHTML = ''; // 清空现有数据
+                data.forEach(row => {
+                    const newRow = document.createElement('tr');
+                    newRow.innerHTML = `
+                        <td><input type="text" class="companyName" value="${row.companyName}"></td>
+                        <td><input type="text" class="vehicleModel" value="${row.vehicleModel}"></td>
+                        <td><input type="number" class="production" value="${row.production}" onchange="calculateRatio(this)"></td>
+                        <td><input type="number" class="inspection" value="${row.inspection}" onchange="calculateRatio(this)"></td>
+                        <td class="ratio">${((row.inspection / row.production) * 100 || 0).toFixed(2)}%</td>
+                        <td>
+                            <select class="targetRatio">
+                                <option value="15" ${row.targetRatio === '15' ? 'selected' : ''}>15%</option>
+                                <option value="30" ${row.targetRatio === '30' ? 'selected' : ''}>30%</option>
+                                <option value="50" ${row.targetRatio === '50' ? 'selected' : ''}>50%</option>
+                            </select>
+                        </td>
+                        <td><button onclick="sendMessage(this)">发送信息</button></td>
+                    `;
+                    tableBody.appendChild(newRow);
+                });
+            }
+        }
+
+        // 导出数据为 CSV 文件
+        function exportToCSV() {
+            try {
+                const rows = [];
+                const headers = ["企业名称", "车辆型号", "生产数量", "自查数量", "自查比率", "企业设定比率"];
+
+                // 添加表头
+                rows.push(headers.join(','));
+
+                // 添加数据行
+                document.querySelectorAll('tr').forEach(row => {
+                    const companyName = row.querySelector('.companyName')?.value;
+                    const vehicleModel = row.querySelector('.vehicleModel')?.value;
+                    const production = row.querySelector('.production')?.value;
+                    const inspection = row.querySelector('.inspection')?.value;
+                    const ratio = row.querySelector('.ratio')?.textContent;
+                    const targetRatio = row.querySelector('.targetRatio')?.value;
+
+                    if (companyName && vehicleModel) {
+                        const rowData = [
+                            `"${companyName}"`, // 用双引号包裹，避免逗号问题
+                            `"${vehicleModel}"`,
+                            production,
+                            inspection,
+                            ratio,
+                            targetRatio
+                        ];
+                        rows.push(rowData.join(','));
+                    }
+                });
+
+                // 创建 CSV 文件，添加 BOM 头
+                const csvContent = "\uFEFF" + rows.join('\n'); // \uFEFF 是 BOM 头
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = '自查汇总.csv';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } catch (error) {
+                console.error('导出 CSV 时出错:', error);
+                alert('导出 CSV 时出错，请检查控制台日志。');
+            }
+        }
+
+        // 页面加载时加载数据
+        window.onload = loadData;
+    </script>
+</body>
+</html>
