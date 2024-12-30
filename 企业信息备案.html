@@ -12,7 +12,7 @@
         .container {
             margin-bottom: 20px;
         }
-        .input-section, .summary-section {
+        .input-section, .summary-section, .imported-section {
             border: 1px solid #ccc;
             padding: 20px;
             margin-bottom: 20px;
@@ -42,17 +42,17 @@
         .input-section button:hover {
             background-color: #0056b3;
         }
-        .summary-section table {
+        .summary-section table, .imported-section table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
         }
-        .summary-section th, .summary-section td {
+        .summary-section th, .summary-section td, .imported-section th, .imported-section td {
             border: 1px solid #ccc;
             padding: 10px;
             text-align: left;
         }
-        .summary-section th {
+        .summary-section th, .imported-section th {
             background-color: #f8f9fa;
         }
         .input-row {
@@ -74,6 +74,9 @@
         }
         .summary-section button.export {
             background-color: #17a2b8;
+        }
+        .summary-section button.import {
+            background-color: #ffc107;
         }
         .summary-section button:hover {
             opacity: 0.9;
@@ -117,6 +120,8 @@
             <h2>企业信息汇总</h2>
             <button onclick="saveData()">保存数据</button>
             <button class="export" onclick="exportToCSV()">导出为 CSV</button>
+            <button class="import" onclick="document.getElementById('fileInput').click()">导入 CSV</button>
+            <input type="file" id="fileInput" accept=".csv" style="display: none;" onchange="importCSV(event)">
             <table id="summaryTable">
                 <thead>
                     <tr>
@@ -136,11 +141,30 @@
                 </tbody>
             </table>
         </div>
+
+        <!-- 第三部分：导入的 CSV 文件信息 -->
+        <div class="imported-section">
+            <h2>导入的 CSV 文件信息</h2>
+            <table id="importedTable">
+                <thead>
+                    <!-- 表头将根据 CSV 文件动态生成 -->
+                </thead>
+                <tbody>
+                    <!-- 数据行将根据 CSV 文件动态生成 -->
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <script>
         // 用于存储录入的数据
         let entries = [];
+
+        // 用于存储导入的 CSV 数据
+        let importedData = {
+            headers: [],
+            rows: []
+        };
 
         // 增加条目
         function addEntry() {
@@ -250,12 +274,87 @@
             link.click();
         }
 
+        // 导入 CSV 文件
+        function importCSV(event) {
+            const file = event.target.files[0];
+            if (!file) {
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const text = e.target.result;
+                const rows = text.split('\n').map(row => row.split(','));
+
+                // 移除 BOM 头（如果有）
+                if (rows[0][0].charCodeAt(0) === 0xFEFF) {
+                    rows[0][0] = rows[0][0].substring(1);
+                }
+
+                // 获取表头
+                const headers = rows[0];
+
+                // 获取数据行
+                const dataRows = rows.slice(1);
+
+                // 保存导入的数据
+                importedData.headers = headers;
+                importedData.rows = dataRows;
+
+                // 将导入的数据保存到 localStorage
+                localStorage.setItem('importedCSVData', JSON.stringify(importedData));
+
+                // 更新导入的表格
+                updateImportedTable(headers, dataRows);
+                alert('CSV 文件已成功导入！');
+            };
+            reader.readAsText(file, 'UTF-8');
+        }
+
+        // 更新导入的表格
+        function updateImportedTable(headers, dataRows) {
+            const thead = document.querySelector('#importedTable thead');
+            const tbody = document.querySelector('#importedTable tbody');
+
+            // 清空现有内容
+            thead.innerHTML = '';
+            tbody.innerHTML = '';
+
+            // 动态生成表头
+            const headerRow = document.createElement('tr');
+            headers.forEach(header => {
+                const th = document.createElement('th');
+                th.textContent = header;
+                headerRow.appendChild(th);
+            });
+            thead.appendChild(headerRow);
+
+            // 动态生成数据行
+            dataRows.forEach(row => {
+                const tr = document.createElement('tr');
+                row.forEach(cell => {
+                    const td = document.createElement('td');
+                    td.textContent = cell;
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            });
+        }
+
         // 页面加载时加载数据
         function loadData() {
+            // 加载企业信息数据
             const savedData = localStorage.getItem('companyData');
             if (savedData) {
                 entries = JSON.parse(savedData);
                 updateSummaryTable();
+            }
+
+            // 加载导入的 CSV 数据
+            const savedCSVData = localStorage.getItem('importedCSVData');
+            if (savedCSVData) {
+                importedData = JSON.parse(savedCSVData);
+                updateImportedTable(importedData.headers, importedData.rows);
             }
         }
 
