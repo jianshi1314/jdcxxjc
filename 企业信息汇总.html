@@ -71,7 +71,7 @@
 
         // 页面加载时从 localStorage 读取数据
         window.onload = function() {
-            const savedData = localStorage.getItem('tableData');
+            const savedData = localStorage.getItem('companyInfoData'); // 使用 companyInfoData 作为键名
             if (savedData) {
                 tableData = JSON.parse(savedData);
                 displayTable(tableData);
@@ -87,7 +87,7 @@
                     const text = e.target.result;
                     try {
                         tableData = parseCSV(text);
-                        localStorage.setItem('tableData', JSON.stringify(tableData)); // 保存到 localStorage
+                        localStorage.setItem('companyInfoData', JSON.stringify(tableData)); // 使用 companyInfoData 作为键名
                         displayTable(tableData);
                         document.getElementById('errorMessage').textContent = '';
                     } catch (error) {
