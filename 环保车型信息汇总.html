@@ -69,6 +69,15 @@
     <script>
         let tableData = []; // 存储表格数据
 
+        // 页面加载时从 localStorage 读取数据
+        window.onload = function() {
+            const savedData = localStorage.getItem('tableData');
+            if (savedData) {
+                tableData = JSON.parse(savedData);
+                displayTable(tableData);
+            }
+        };
+
         // 监听文件选择事件
         document.getElementById('csvFileInput').addEventListener('change', function (event) {
             const file = event.target.files[0];
@@ -78,6 +87,7 @@
                     const text = e.target.result;
                     try {
                         tableData = parseCSV(text);
+                        localStorage.setItem('tableData', JSON.stringify(tableData)); // 保存到 localStorage
                         displayTable(tableData);
                         document.getElementById('errorMessage').textContent = '';
                     } catch (error) {
