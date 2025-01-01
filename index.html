@@ -16,9 +16,6 @@
             background-color: #f4f4f4;
             padding: 20px;
             box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between; /* 将内容分布在顶部和底部 */
         }
         .sidebar ul {
             list-style: none;
@@ -57,35 +54,11 @@
             height: 100vh;
             border: none;
         }
-        .hidden {
-            display: none;
-        }
-        .welcome-message {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 20px;
-        }
-        .logout-button {
-            background-color: #dc3545;
-            color: #fff;
-            border: none;
-            padding: 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            text-align: center;
-        }
-        .logout-button:hover {
-            background-color: #c82333;
-        }
     </style>
 </head>
 <body>
     <!-- 左侧栏目 -->
     <div class="sidebar">
-        <!-- 欢迎信息 -->
-        <div class="welcome-message" id="welcomeMessage"></div>
-
-        <!-- 菜单 -->
         <ul>
             <li><a href="#" onclick="loadHomePage()">新生产机动车下线检测平台方案</a></li>
             <li class="submenu">
@@ -95,6 +68,7 @@
                     <li><a href="#" onclick="loadPage('车型信息查询.html')">车型信息查询</a></li>
                     <li><a href="#" onclick="loadPage('环保车型信息维护.html')">环保车型信息维护</a></li>
                     <li><a href="#" onclick="loadPage('下线检查数据收集.html')">下线检查数据收集</a></li>
+                    <li><a href="#" onclick="loadPage('in.html')">提交数据</a></li> <!-- 新增链接 -->
                     <li class="submenu">
                         <a href="#" onclick="toggleSubMenu(event)">下线数据检查汇总</a>
                         <ul>
@@ -106,7 +80,7 @@
                     </li>
                 </ul>
             </li>
-            <li class="submenu admin-only">
+            <li class="submenu">
                 <a href="#" onclick="toggleSubMenu(event)">管理端</a>
                 <ul>
                     <li><a href="#" onclick="loadPage('企业信息汇总.html')">企业信息汇总</a></li>
@@ -114,7 +88,7 @@
                     <li><a href="#" onclick="loadPage('企业自查汇总.html')">企业自查汇总</a></li>
                 </ul>
             </li>
-            <li class="submenu admin-only">
+            <li class="submenu">
                 <a href="#" onclick="toggleSubMenu(event)">通知管理</a>
                 <ul>
                     <li><a href="#" onclick="loadPage('通知创建与发送.html')">通知创建与发送</a></li>
@@ -122,7 +96,7 @@
                     <li><a href="#" onclick="loadPage('通知统计与管理.html')">通知统计与管理</a></li>
                 </ul>
             </li>
-            <li class="submenu admin-only">
+            <li class="submenu">
                 <a href="#" onclick="toggleSubMenu(event)">用户权限</a>
                 <ul>
                     <li><a href="#" onclick="loadPage('登录界面.html')">登录界面</a></li>
@@ -131,9 +105,6 @@
                 </ul>
             </li>
         </ul>
-
-        <!-- 退出按钮 -->
-        <button class="logout-button" onclick="logout()">退出</button>
     </div>
 
     <!-- 右侧内容区域 -->
@@ -146,20 +117,6 @@
     </div>
 
     <script>
-        // 根据用户角色控制界面显示
-        const userRole = sessionStorage.getItem('userRole');
-        if (!userRole) {
-            // 如果没有登录，跳转到登录页面
-            window.location.href = 'login.html';
-        } else {
-            // 显示欢迎信息
-            document.getElementById('welcomeMessage').innerText = `欢迎你，${userRole}`;
-            if (userRole === 'user1') {
-                // 如果是 user1，隐藏管理端、通知管理和用户权限
-                document.querySelectorAll('.admin-only').forEach(el => el.classList.add('hidden'));
-            }
-        }
-
         // 加载页面的函数
         function loadPage(page) {
             document.getElementById('contentFrame').src = page || 'about:blank';
@@ -178,14 +135,6 @@
             event.preventDefault(); // 阻止默认链接行为
             const parentLi = event.target.parentElement; // 获取父级 li 元素
             parentLi.classList.toggle('active'); // 切换 active 类
-        }
-
-        // 退出函数
-        function logout() {
-            // 清除 sessionStorage 中的用户角色
-            sessionStorage.removeItem('userRole');
-            // 跳转到登录页面
-            window.location.href = 'login.html';
         }
 
         // 默认显示首页
