@@ -1,60 +1,27 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload and Display Table 1</title>
-    <style>
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-    </style>
+    <title>测试页面 1</title>
 </head>
 <body>
-    <h1>Upload and Display Table 1 Data</h1>
+    <h1>测试页面 1 - 文件上传</h1>
 
-    <!-- 文件上传部分 -->
-    <h2>Upload CSV File 1 (5 Columns)</h2>
-    <input type="file" id="file1" accept=".csv">
-    <button onclick="uploadFile('file1', '/upload1')">Upload File 1</button>
+    <!-- 文件上传表单 -->
+    <input type="file" id="fileInput" accept=".csv">
+    <button onclick="uploadFile()">上传文件</button>
 
-    <!-- 数据展示部分 -->
-    <h2>Table 1 Data</h2>
-    <button onclick="fetchData('/data1', 'table1')">Load Table 1 Data</button>
-    <table id="table1">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Column 1</th>
-                <th>Column 2</th>
-                <th>Column 3</th>
-                <th>Column 4</th>
-                <th>Column 5</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!-- 数据将动态插入到这里 -->
-        </tbody>
-    </table>
+    <!-- 上传结果 -->
+    <div id="result"></div>
 
     <script>
-        // 文件上传函数
-        async function uploadFile(inputId, apiPath) {
-            const fileInput = document.getElementById(inputId);
+        async function uploadFile() {
+            const fileInput = document.getElementById('fileInput');
             const file = fileInput.files[0];
 
             if (!file) {
-                alert('Please select a file');
+                alert('请选择一个文件');
                 return;
             }
 
@@ -62,40 +29,22 @@
             formData.append('file', file);
 
             try {
-                const response = await fetch(`https://my-api-jgxfwkuucb.cn-hangzhou.fcapp.run${apiPath}`, {
+                const response = await fetch('https://my-api-jgxfwkuucb.cn-hangzhou.fcapp.run/upload1', {
                     method: 'POST',
                     body: formData
                 });
+
+                // 确保响应是 JSON 格式
                 const result = await response.json();
-                alert(result.message || 'File uploaded successfully');
-            } catch (error) {
-                console.error('Error uploading file:', error);
-                alert('Failed to upload file');
-            }
-        }
 
-        // 数据查询函数
-        async function fetchData(apiPath, tableId) {
-            try {
-                const response = await fetch(`https://my-api-jgxfwkuucb.cn-hangzhou.fcapp.run${apiPath}`);
-                const data = await response.json();
-                const tableBody = document.querySelector(`#${tableId} tbody`);
-                tableBody.innerHTML = ''; // 清空现有内容
-
-                data.forEach(row => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>${row.id}</td>
-                        <td>${row.column1}</td>
-                        <td>${row.column2}</td>
-                        <td>${row.column3}</td>
-                        <td>${row.column4}</td>
-                        <td>${row.column5}</td>
-                    `;
-                    tableBody.appendChild(tr);
-                });
+                if (result.success) {
+                    alert(result.message || '文件上传成功');
+                } else {
+                    alert(`文件上传失败: ${result.message}`);
+                }
             } catch (error) {
-                console.error('Error fetching data:', error);
+                console.error('文件上传失败:', error);
+                alert('文件上传失败');
             }
         }
     </script>
