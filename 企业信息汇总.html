@@ -27,9 +27,6 @@
         th {
             background-color: #f4f4f4;
         }
-        input[type="file"] {
-            margin-bottom: 20px;
-        }
         .error {
             color: red;
             margin-top: 10px;
@@ -48,17 +45,67 @@
             padding: 5px 10px;
             cursor: pointer;
         }
+        .analysis-container {
+            margin-bottom: 20px;
+        }
+        .analysis-container h2 {
+            margin-top: 20px;
+            color: #333;
+        }
+        .analysis-container .chart-container {
+            width: 40%; /* 缩小饼图容器宽度 */
+            margin: 20px auto;
+        }
+        .analysis-container .result-box {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 10px;
+        }
+        .analysis-container .result-box ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .analysis-container .result-box li {
+            margin: 5px 0;
+            padding: 5px;
+            background-color: #fff;
+            border: 1px solid #eee;
+            border-radius: 3px;
+        }
+        .analysis-container .result-box li:nth-child(odd) {
+            background-color: #fafafa;
+        }
     </style>
+    <!-- 引入 Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <h1>企业信息查询</h1>
-    <input type="file" id="csvFileInput" accept=".csv" />
+
+    <!-- 分析功能 -->
+    <div class="analysis-container">
+        <h2>城市企业数量分布</h2>
+        <div class="chart-container">
+            <canvas id="cityChart"></canvas>
+        </div>
+
+        <h2>城市企业数量排序（从大到小）</h2>
+        <div class="result-box">
+            <ul id="cityCompanyCount"></ul>
+        </div>
+    </div>
+
+    <!-- 搜索功能 -->
     <div class="search-container">
         <input type="text" id="companyNameInput" placeholder="输入企业名称" />
         <input type="text" id="cityInput" placeholder="输入城市" />
         <button onclick="performSearch()">查询</button>
     </div>
     <div id="errorMessage" class="error"></div>
+
+    <!-- 表格 -->
     <table id="dataTable">
         <thead>
             <tr id="tableHeader"></tr>
@@ -68,38 +115,27 @@
 
     <script>
         let tableData = []; // 存储表格数据
+        let cityChart = null; // 存储饼图实例
 
-        // 页面加载时从 localStorage 读取数据
+        // 页面加载时从 GitHub 读取 CSV 文件
         window.onload = function() {
-            const savedData = localStorage.getItem('companyInfoData'); // 使用 companyInfoData 作为键名
-            if (savedData) {
-                tableData = JSON.parse(savedData);
-                displayTable(tableData);
-            }
-        };
-
-        // 监听文件选择事件
-        document.getElementById('csvFileInput').addEventListener('change', function (event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    const text = e.target.result;
+            const csvUrl = 'https://raw.githubusercontent.com/jianshi1314/jdcxxjc/main/%E6%95%B0%E6%8D%AE%E5%BA%93/%E4%BC%81%E4%B8%9A%E4%BF%A1%E6%81%AF%E6%B1%87%E6%80%BB.csv';
+            fetch(csvUrl)
+                .then(response => response.text())
+                .then(text => {
                     try {
                         tableData = parseCSV(text);
-                        localStorage.setItem('companyInfoData', JSON.stringify(tableData)); // 使用 companyInfoData 作为键名
                         displayTable(tableData);
+                        performAnalysis(tableData); // 执行分析
                         document.getElementById('errorMessage').textContent = '';
                     } catch (error) {
                         document.getElementById('errorMessage').textContent = '解析 CSV 文件失败：' + error.message;
                     }
-                };
-                reader.onerror = function () {
-                    document.getElementById('errorMessage').textContent = '读取文件失败';
-                };
-                reader.readAsText(file);
-            }
-        });
+                })
+                .catch(error => {
+                    document.getElementById('errorMessage').textContent = '读取 CSV 文件失败：' + error.message;
+                });
+        };
 
         // 解析 CSV 文件内容
         function parseCSV(text) {
@@ -167,7 +203,7 @@
             rows.forEach(row => {
                 const cells = row.querySelectorAll('td');
                 const rowCompanyName = cells[0]?.textContent.toLowerCase() || ''; // 假设企业名称在第一列
-                const rowCity = cells[1]?.textContent.toLowerCase() || ''; // 假设城市在第二列
+                const rowCity = cells[2]?.textContent.toLowerCase() || ''; // 假设城市在第三列
 
                 // 模糊匹配：企业名称或城市只要一个符合
                 const matchCompanyName = companyName === '' ? false : rowCompanyName.includes(companyName);
@@ -178,6 +214,84 @@
                     row.classList.add('highlight');
                 } else {
                     row.classList.remove('highlight');
+                }
+            });
+        }
+
+        // 执行分析功能
+        function performAnalysis(data) {
+            // 1. 统计每个城市的企业数量
+            const cityCompanyCount = {};
+            for (let i = 1; i < data.length; i++) {
+                const city = data[i][2]; // 假设城市在第三列
+                if (cityCompanyCount[city]) {
+                    cityCompanyCount[city]++;
+                } else {
+                    cityCompanyCount[city] = 1;
+                }
+            }
+
+            // 2. 按企业数量从大到小排序
+            const sortedCities = Object.entries(cityCompanyCount)
+                .sort((a, b) => b[1] - a[1]);
+
+            // 显示城市企业数量排序
+            const cityCompanyCountList = document.getElementById('cityCompanyCount');
+            cityCompanyCountList.innerHTML = sortedCities
+                .map(([city, count]) => `<li><strong>${city}</strong>: ${count} 家企业</li>`)
+                .join('');
+
+            // 3. 绘制饼图
+            const ctx = document.getElementById('cityChart').getContext('2d');
+
+            // 如果饼图已存在，则销毁
+            if (cityChart) {
+                cityChart.destroy();
+            }
+
+            // 提取饼图数据
+            const labels = sortedCities.map(([city]) => city);
+            const values = sortedCities.map(([_, count]) => count);
+
+            // 绘制饼图
+            cityChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '企业数量',
+                        data: values,
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.6)',
+                            'rgba(54, 162, 235, 0.6)',
+                            'rgba(255, 206, 86, 0.6)',
+                            'rgba(75, 192, 192, 0.6)',
+                            'rgba(153, 102, 255, 0.6)',
+                            'rgba(255, 159, 64, 0.6)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: '城市企业数量分布'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    return `${label}: ${value} 家企业`;
+                                }
+                            }
+                        }
+                    }
                 }
             });
         }

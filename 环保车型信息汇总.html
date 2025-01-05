@@ -27,9 +27,6 @@
         th {
             background-color: #f4f4f4;
         }
-        input[type="file"] {
-            margin-bottom: 20px;
-        }
         .error {
             color: red;
             margin-top: 10px;
@@ -48,17 +45,41 @@
             padding: 5px 10px;
             cursor: pointer;
         }
+        .analysis-container {
+            margin-bottom: 20px;
+        }
+        .analysis-container h2 {
+            margin-top: 20px;
+        }
+        .analysis-container ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .analysis-container li {
+            margin: 5px 0;
+        }
     </style>
 </head>
 <body>
     <h1>环保车型信息汇总</h1>
-    <input type="file" id="csvFileInput" accept=".csv" />
+
+    <!-- 分析功能 -->
+    <div class="analysis-container">
+        <h2>企业车辆型号数量排序（前10）</h2>
+        <ul id="companyModelCount"></ul>
+
+        <h2>配置核查是否一致（仅显示“否”）</h2>
+        <ul id="configCheckResult"></ul>
+    </div>
+
+    <!-- 搜索功能 -->
     <div class="search-container">
-        <input type="text" id="companyNameInput" placeholder="输入企业名称" />
-        <input type="text" id="cityInput" placeholder="输入车辆型号" />
+        <input type="text" id="searchInput" placeholder="输入关键字（如企业名称或车辆型号）" />
         <button onclick="performSearch()">查询</button>
     </div>
     <div id="errorMessage" class="error"></div>
+
+    <!-- 表格 -->
     <table id="dataTable">
         <thead>
             <tr id="tableHeader"></tr>
@@ -69,37 +90,25 @@
     <script>
         let tableData = []; // 存储表格数据
 
-        // 页面加载时从 localStorage 读取数据
+        // 页面加载时从 GitHub 读取 CSV 文件
         window.onload = function() {
-            const savedData = localStorage.getItem('ecoCarData'); // 使用 ecoCarData 作为键名
-            if (savedData) {
-                tableData = JSON.parse(savedData);
-                displayTable(tableData);
-            }
-        };
-
-        // 监听文件选择事件
-        document.getElementById('csvFileInput').addEventListener('change', function (event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    const text = e.target.result;
+            const csvUrl = 'https://raw.githubusercontent.com/jianshi1314/jdcxxjc/main/%E6%95%B0%E6%8D%AE%E5%BA%93/%E7%8E%AF%E4%BF%9D%E8%BD%A6%E5%9E%8B%E4%BF%A1%E6%81%AF%E6%B1%87%E6%80%BB.csv';
+            fetch(csvUrl)
+                .then(response => response.text())
+                .then(text => {
                     try {
                         tableData = parseCSV(text);
-                        localStorage.setItem('ecoCarData', JSON.stringify(tableData)); // 使用 ecoCarData 作为键名
                         displayTable(tableData);
+                        performAnalysis(tableData); // 执行分析
                         document.getElementById('errorMessage').textContent = '';
                     } catch (error) {
                         document.getElementById('errorMessage').textContent = '解析 CSV 文件失败：' + error.message;
                     }
-                };
-                reader.onerror = function () {
-                    document.getElementById('errorMessage').textContent = '读取文件失败';
-                };
-                reader.readAsText(file);
-            }
-        });
+                })
+                .catch(error => {
+                    document.getElementById('errorMessage').textContent = '读取 CSV 文件失败：' + error.message;
+                });
+        };
 
         // 解析 CSV 文件内容
         function parseCSV(text) {
@@ -159,8 +168,7 @@
 
         // 执行查询
         function performSearch() {
-            const companyName = document.getElementById('companyNameInput').value.trim().toLowerCase();
-            const city = document.getElementById('cityInput').value.trim().toLowerCase();
+            const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
             const rows = document.querySelectorAll('#tableBody tr');
 
             // 遍历表格行，匹配查询条件
@@ -170,8 +178,8 @@
                 const rowCity = cells[1]?.textContent.toLowerCase() || ''; // 假设车辆型号在第二列
 
                 // 模糊匹配：企业名称或车辆型号只要一个符合
-                const matchCompanyName = companyName === '' ? false : rowCompanyName.includes(companyName);
-                const matchCity = city === '' ? false : rowCity.includes(city);
+                const matchCompanyName = rowCompanyName.includes(keyword);
+                const matchCity = rowCity.includes(keyword);
 
                 // 如果匹配，高亮显示；否则移除高亮
                 if (matchCompanyName || matchCity) {
@@ -180,6 +188,50 @@
                     row.classList.remove('highlight');
                 }
             });
+        }
+
+        // 执行分析功能
+        function performAnalysis(data) {
+            // 1. 统计企业的车辆型号数量
+            const companyModelCount = {};
+            for (let i = 1; i < data.length; i++) {
+                const companyName = data[i][0]; // 假设企业名称在第一列
+                if (companyModelCount[companyName]) {
+                    companyModelCount[companyName]++;
+                } else {
+                    companyModelCount[companyName] = 1;
+                }
+            }
+
+            // 按车辆型号数量从大到小排序
+            const sortedCompanies = Object.entries(companyModelCount)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10); // 取前10
+
+            // 显示企业车辆型号数量
+            const companyModelCountList = document.getElementById('companyModelCount');
+            companyModelCountList.innerHTML = sortedCompanies
+                .map(([company, count]) => `<li>${company}: ${count} 种车型</li>`)
+                .join('');
+
+            // 2. 显示配置核查是否一致（仅显示“否”）
+            const configCheckResult = [];
+            for (let i = 1; i < data.length; i++) {
+                const companyName = data[i][0]; // 企业名称
+                const vehicleModel = data[i][1]; // 车辆型号
+                const isConsistent = data[i][3]; // 是否一致（假设在第四列）
+
+                // 只显示“否”的记录
+                if (isConsistent === "否") {
+                    configCheckResult.push(`${companyName} - ${vehicleModel} - ${isConsistent}`);
+                }
+            }
+
+            // 显示配置核查结果
+            const configCheckResultList = document.getElementById('configCheckResult');
+            configCheckResultList.innerHTML = configCheckResult
+                .map(result => `<li>${result}</li>`)
+                .join('');
         }
     </script>
 </body>
