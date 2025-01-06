@@ -138,6 +138,19 @@
             font-size: 30px;
             cursor: pointer;
         }
+        /* PDF嵌入样式 */
+        .pdf-section {
+            margin-top: 30px;
+        }
+        .pdf-section h2 {
+            margin-bottom: 10px;
+        }
+        .pdf-embed {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
@@ -273,6 +286,12 @@
         <div class="photo-summary" id="photoSummary">
             <!-- 动态添加的照片汇总行将显示在这里 -->
         </div>
+    </div>
+
+    <!-- 第五部分：PDF嵌入 -->
+    <div class="pdf-section">
+        <h2>核查不一致企业</h2>
+        <iframe class="pdf-embed" src="https://drive.google.com/file/d/1drAT1LLnjjudMCeGgCqMRZPY3NiDDxZA/preview"></iframe>
     </div>
 
     <!-- 模态框 -->
